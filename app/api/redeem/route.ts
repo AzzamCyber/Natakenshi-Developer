@@ -25,17 +25,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Akses ditolak. Pesanan Anda masih berstatus: ${order.status.toUpperCase()}` }, { status: 403 });
     }
 
-    // Cari produk di file .md untuk mengambil link download
-    let products = [];
+    // 🔥 FIX TYPESCRIPT VERCEL: Deklarasikan sebagai array 'any'
+    let products: any[] = []; 
     try {
       products = getAllProducts();
     } catch (e) {
       return NextResponse.json({ error: 'Gagal membaca katalog produk.' }, { status: 500 });
     }
 
-    // 🔥 FIX TYPESCRIPT VERCEL: Tambahkan (p: any) agar Vercel tidak bingung
-    const product = products.find((p: any) => p.title === order.productTitle);
+    // 🔥 FIX TYPESCRIPT VERCEL: Deklarasikan variabel product sebagai 'any'
+    const product: any = products.find((p: any) => p.title === order.productTitle);
 
+    // Sekarang Vercel tidak akan cerewet lagi soal download_link
     if (!product || !product.download_link) {
       return NextResponse.json({ error: 'Link download belum disetting oleh Admin di file produk.' }, { status: 404 });
     }
