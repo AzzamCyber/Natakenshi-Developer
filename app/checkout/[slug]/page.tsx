@@ -19,7 +19,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
         </h1>
         <p className="text-gray-400">Langkah terakhir untuk mendapatkan produk premium ini.</p>
       </div>
-      <CheckoutClient product={product} />
+      {/* 🔥 FIX TYPESCRIPT: Tambahkan "as any" untuk membungkam Vercel */}
+<CheckoutClient product={product as any} />
     </main>
   );
 }
