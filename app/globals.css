@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Di Tailwind v4, kita memasukkan custom color langsung ke sini */
+@theme {
+  --color-dark: #0f172a;
+  --color-darker: #020617;
+  --color-brand-blue: #2563eb;
+  --color-brand-cyan: #06b6d4;
+}
+
+body {
+  @apply bg-darker text-white;
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)];
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-blue to-brand-cyan;
+}
