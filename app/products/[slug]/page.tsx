@@ -4,7 +4,7 @@ import ProductDetailClient from "@/components/ProductDetailClient";
 
 // ⚡ FITUR RAHASIA: Static Site Generation (SSG)
 export function generateStaticParams() {
-  const products = getAllProducts();
+  const products = getAllProducts() as any[];
   return products.map((product) => ({
     slug: product.slug,
   }));
@@ -14,11 +14,11 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   const { slug } = await params;
   
   // Ambil data produk langsung dari file Markdown
-  const products = getAllProducts();
-  const product = products.find((p) => p.slug === slug);
+  const products = getAllProducts() as any[];
+  const product = products.find((p: any) => p.slug === slug);
 
   if (!product) return notFound();
 
   // Lempar datanya ke UI Client yang penuh animasi
-  return <ProductDetailClient product={product} />;
+  return <ProductDetailClient product={product as any} />;
 }

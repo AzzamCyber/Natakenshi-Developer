@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export default function Home() {
   // Panggil fungsi getAllProducts sesuai yang ada di lib/products.ts kamu
-  const products = getAllProducts();
+  const products = getAllProducts() as any;
 
   return <HomeClient products={products} />;
 }
