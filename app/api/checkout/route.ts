@@ -1,11 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const dataDir = path.join(process.cwd(), 'data');
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1486043026987028654/I4wc_2xaNSvMZYRskk0HmLW8eOkAR4Pnm0_zejC0QlCio9v28QFIxw0zgSsghDn7m2DN";
 
-// Fungsi Pembuat License Key Acak (Misal: NATA-8F9A-2B3C)
 const generateLicenseKey = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let key = 'NATA-';
@@ -15,28 +13,39 @@ const generateLicenseKey = () => {
   return key;
 };
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const orderData = await request.json();
-    const filePath = path.join(dataDir, 'orders.json');
-    
-    let orders = [];
-    if (fs.existsSync(filePath)) orders = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
     const orderId = Date.now().toString();
+    
     const newOrder = {
       id: orderId,
       ...orderData,
       status: 'Pending',
-      licenseKey: generateLicenseKey(), // 🔥 AUTO GENERATE LISENSI
+      licenseKey: generateLicenseKey(), 
       date: new Date().toISOString()
     };
 
-    orders.push(newOrder);
-    
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify(orders, null, 2));
+    // 💾 1. SIMPAN KE ORDERS.JSON (Dibungkus pelindung agar Vercel tidak 500)
+    try {
+      const dataDir = path.join(process.cwd(), 'data');
+      const filePath = path.join(dataDir, 'orders.json');
+      
+      let orders = [];
+      if (fs.existsSync(filePath)) {
+        orders = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      }
+      
+      orders.push(newOrder);
+      
+      if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+      fs.writeFileSync(filePath, JSON.stringify(orders, null, 2));
+      console.log("✅ [SUCCESS] Data order berhasil masuk ke orders.json");
+    } catch (fileError) {
+      console.error("⚠️ [WARNING] Gagal menulis ke orders.json. Ini normal jika terjadi di Vercel (Read-Only).");
+    }
 
+    // 🚀 2. KIRIM NOTIFIKASI KE DISCORD
     try {
       await fetch(DISCORD_WEBHOOK_URL, {
         method: 'POST',
@@ -56,10 +65,13 @@ export async function POST(request: Request) {
           }]
         })
       });
-    } catch (e) {}
+    } catch (discordError) {
+      console.error("Gagal kirim Webhook:", discordError);
+    }
 
     return NextResponse.json({ success: true, orderId: newOrder.id });
   } catch (error) {
+    console.error("Fatal Error:", error);
     return NextResponse.json({ error: 'Gagal memproses pesanan' }, { status: 500 });
   }
 }
